@@ -144,7 +144,9 @@ class Zlapp(Fudan):
         last_info = get_info.json()
 
         print("◉上一次提交日期为:", last_info["d"]["info"]["date"])
-        if last_info["d"]["info"]["area"] != "其他国家":
+        if last_info["d"]["info"]["area"] == "其他国家":
+            pass
+        else:
             position = last_info["d"]["info"]['geo_api_info']
             position = json_loads(position)
 
@@ -152,8 +154,13 @@ class Zlapp(Fudan):
             # print("◉上一次提交GPS为", position["position"])
         print(last_info)
         
-        # 改为斯德哥尔摩时区(UTC+1)
-        os.environ['TZ'] = 'Europe/Stockholm'
+        # 更改时区, 时区参数待实现
+        if last_info["d"]["info"]["area"] == "其他国家":
+            # 改为斯德哥尔摩时区(UTC+1)
+            os.environ['TZ'] = 'Europe/Stockholm'
+        else:
+            # 改为上海时区
+            os.environ['TZ'] = 'Asia/Shanghai'
         time.tzset()
         today = time.strftime("%Y%m%d", time.localtime())
         print("◉今日日期为:", today)
@@ -201,30 +208,44 @@ class Zlapp(Fudan):
         }
 
         print("\n\n◉◉提交中")
-
-        # geo_api_info = json_loads(self.last_info["geo_api_info"])
         province = self.last_info["province"]
         city = self.last_info["city"]
-        # district = geo_api_info["addressComponent"].get("district", "")
-        area = self.last_info["area"]
-        gwszdd = self.last_info["gwszdd"]
+        if self.last_info["d"]["info"]["area"] == "其他国家":
+            area = self.last_info["area"]
+            gwszdd = self.last_info["gwszdd"]
+        else:
+            geo_api_info = json_loads(self.last_info["geo_api_info"])
+            district = geo_api_info["addressComponent"].get("district", "")
         
         while(True):
             print("◉正在识别验证码......")
             code = self.validate_code()
             print("◉验证码为:", code)
-            self.last_info.update(
-                {
-                    "tw": "13",
-                    "province": province,
-                    "city": city,
-                    "area": area,
-                    "gwszdd": gwszdd,
-                    #"sfzx": "1",  # 是否在校
-                    #"fxyy": "",  # 返校原因
-                    "code": code,
-                }
-            )
+            if self.last_info["d"]["info"]["area"] == "其他国家":
+                self.last_info.update(
+                    {
+                        "tw": "13",
+                        "province": province,
+                        "city": city,
+                        "area": area,
+                        "gwszdd": gwszdd,
+                        #"sfzx": "1",  # 是否在校
+                        #"fxyy": "",  # 返校原因
+                        "code": code,
+                    }
+                )
+            else:
+                self.last_info.update(
+                    {
+                        "tw": "13",
+                        "province": province,
+                        "city": city,
+                        "area": " ".join((province, city, district)),
+                        #"sfzx": "1",  # 是否在校
+                        #"fxyy": "",  # 返校原因
+                        "code": code,
+                    }
+                )
             print(self.last_info)
             save = self.session.post(
                 'https://zlapp.fudan.edu.cn/ncov/wap/fudan/save',
