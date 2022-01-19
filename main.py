@@ -144,8 +144,10 @@ class Zlapp(Fudan):
         last_info = get_info.json()
 
         print("◉上一次提交日期为:", last_info["d"]["info"]["date"])
-        print("上一次提交的地区是:", last_info["d"]["info"]["area"])
-        if last_info["d"]["info"]["area"] == "其他国家":
+        # 地区得先从oldInfo中提取
+        last_area = last_info["d"]["oldInfo"]["area"]
+        print("上一次提交的地区是:", last_area)
+        if last_area == "其他国家":
             pass
         else:
             position = last_info["d"]["info"]['geo_api_info']
@@ -156,7 +158,7 @@ class Zlapp(Fudan):
         print(last_info)
         
         # 更改时区, 时区参数待实现
-        if last_info["d"]["info"]["area"] == "其他国家":
+        if last_area == "其他国家":
             # 改为斯德哥尔摩时区(UTC+1)
             os.environ['TZ'] = 'Europe/Stockholm'
         else:
@@ -211,8 +213,8 @@ class Zlapp(Fudan):
         print("\n\n◉◉提交中")
         province = self.last_info["province"]
         city = self.last_info["city"]
-        if self.last_info["d"]["info"]["area"] == "其他国家":
-            area = self.last_info["area"]
+        area = self.last_info["area"]
+        if area == "其他国家":
             gwszdd = self.last_info["gwszdd"]
         else:
             geo_api_info = json_loads(self.last_info["geo_api_info"])
@@ -222,7 +224,7 @@ class Zlapp(Fudan):
             print("◉正在识别验证码......")
             code = self.validate_code()
             print("◉验证码为:", code)
-            if self.last_info["d"]["info"]["area"] == "其他国家":
+            if area == "其他国家":
                 self.last_info.update(
                     {
                         "tw": "13",
