@@ -146,7 +146,7 @@ class Zlapp(Fudan):
         print("◉上一次提交日期为:", last_info["d"]["info"]["date"])
         # 地区得先从oldInfo中提取
         last_area = last_info["d"]["oldInfo"]["area"]
-        print("上一次提交的地区是:", last_area)
+        print("◉上一次提交的地区是:", last_area)
         if last_area == "其他国家":
             pass
         else:
@@ -155,7 +155,7 @@ class Zlapp(Fudan):
 
             print("◉上一次提交地址为:", position['formattedAddress'])
             # print("◉上一次提交GPS为", position["position"])
-        print(last_info)
+        # print(last_info)
         
         # 更改时区, 时区参数待实现
         if last_area == "其他国家":
