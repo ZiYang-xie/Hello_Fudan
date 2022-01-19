@@ -157,13 +157,8 @@ class Zlapp(Fudan):
             # print("◉上一次提交GPS为", position["position"])
         # print(last_info)
         
-        # 更改时区, 时区参数待实现
-        if last_area == "其他国家":
-            # 改为斯德哥尔摩时区(UTC+1)
-            os.environ['TZ'] = 'Europe/Stockholm'
-        else:
-            # 改为上海时区
-            os.environ['TZ'] = 'Asia/Shanghai'
+        # 改为上海时区
+        os.environ['TZ'] = 'Asia/Shanghai'
         time.tzset()
         today = time.strftime("%Y%m%d", time.localtime())
         print("◉今日日期为:", today)
