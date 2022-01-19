@@ -144,6 +144,7 @@ class Zlapp(Fudan):
         last_info = get_info.json()
 
         print("◉上一次提交日期为:", last_info["d"]["info"]["date"])
+        print("上一次提交的地区是:", last_info["d"]["info"]["area"])
         if last_info["d"]["info"]["area"] == "其他国家":
             pass
         else:
