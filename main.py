@@ -149,11 +149,11 @@ class Zlapp(Fudan):
         position = json_loads(position)
 
         print("◉上一次提交地址为:", position['formattedAddress'])
-        # print("◉上一次提交GPS为", position["position"])
-        # print(last_info)
+        print("◉上一次提交GPS为", position["position"])
+        print(last_info)
         
-        # 改为上海时区
-        os.environ['TZ'] = 'Asia/Shanghai'
+        # 改为斯德哥尔摩时区(UTC+1)
+        os.environ['TZ'] = 'Europe/Stockholm'
         time.tzset()
         today = time.strftime("%Y%m%d", time.localtime())
         print("◉今日日期为:", today)
@@ -222,7 +222,7 @@ class Zlapp(Fudan):
                     "code": code,
                 }
             )
-            # print(self.last_info)
+            print(self.last_info)
             save = self.session.post(
                 'https://zlapp.fudan.edu.cn/ncov/wap/fudan/save',
                 data=self.last_info,
