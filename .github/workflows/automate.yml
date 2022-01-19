@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ Abroad-expand ]
+    branches: [ main ]
   pull_request:
-    branches: [ Abroad-expand ]
+    branches: [ main ]
   schedule:
     - cron:  '0 2 * * *'
   workflow_dispatch:
