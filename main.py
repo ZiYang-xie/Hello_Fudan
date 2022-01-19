@@ -144,12 +144,12 @@ class Zlapp(Fudan):
         last_info = get_info.json()
 
         print("◉上一次提交日期为:", last_info["d"]["info"]["date"])
+        if last_info["d"]["info"]["area"] != "其他国家":
+            position = last_info["d"]["info"]['geo_api_info']
+            position = json_loads(position)
 
-        position = last_info["d"]["info"]['geo_api_info']
-        position = json_loads(position)
-
-        print("◉上一次提交地址为:", position['formattedAddress'])
-        print("◉上一次提交GPS为", position["position"])
+            print("◉上一次提交地址为:", position['formattedAddress'])
+            # print("◉上一次提交GPS为", position["position"])
         print(last_info)
         
         # 改为斯德哥尔摩时区(UTC+1)
@@ -202,10 +202,12 @@ class Zlapp(Fudan):
 
         print("\n\n◉◉提交中")
 
-        geo_api_info = json_loads(self.last_info["geo_api_info"])
+        # geo_api_info = json_loads(self.last_info["geo_api_info"])
         province = self.last_info["province"]
         city = self.last_info["city"]
-        district = geo_api_info["addressComponent"].get("district", "")
+        # district = geo_api_info["addressComponent"].get("district", "")
+        area = self.last_info["area"]
+        gwszdd = self.last_info["gwszdd"]
         
         while(True):
             print("◉正在识别验证码......")
@@ -216,7 +218,8 @@ class Zlapp(Fudan):
                     "tw": "13",
                     "province": province,
                     "city": city,
-                    "area": " ".join((province, city, district)),
+                    "area": area,
+                    "gwszdd": gwszdd,
                     #"sfzx": "1",  # 是否在校
                     #"fxyy": "",  # 返校原因
                     "code": code,
