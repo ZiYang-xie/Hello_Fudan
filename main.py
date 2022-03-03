@@ -34,7 +34,7 @@ class Fudan:
         :param url_login: 登录页，默认服务为空
         """
         self.session = session()
-        self.session.keep_alive = False
+        self.session.keep_alive = True
         self.session.headers['User-Agent'] = self.UA
         self.url_login = url_login
         self.url_code = url_code
@@ -211,12 +211,17 @@ class Zlapp(Fudan):
             print("◉正在识别验证码......")
             code = self.validate_code()
             print("◉验证码为:", code)
+            #import pdb; pdb.set_trace()
+            if(city=="上海市"):
+                area = " ".join((city, district))
+            else:
+                area = " ".join((province, city, district))
             self.last_info.update(
                 {
                     "tw": "13",
                     "province": province,
                     "city": city,
-                    "area": " ".join((province, city, district)),
+                    "area": area,
                     #"sfzx": "1",  # 是否在校
                     #"fxyy": "",  # 返校原因
                     "code": code,
