@@ -15,7 +15,27 @@ from PIL import Image
 from PIL import ImageEnhance
 
 from requests import session, post, adapters
+import urllib3, ssl
 adapters.DEFAULT_RETRIES = 5
+
+class CustomHttpAdapter (adapters.HTTPAdapter):
+    # "Transport adapter" that allows us to use custom ssl_context.
+
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = urllib3.poolmanager.PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block, ssl_context=self.ssl_context)
+
+def get_legacy_session():
+    ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    ctx.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
+    mySession = session()
+    mySession.mount('https://', CustomHttpAdapter(ctx))
+    return mySession
 
 class Fudan:
     """
@@ -34,8 +54,8 @@ class Fudan:
         :param psw: 密码
         :param url_login: 登录页，默认服务为空
         """
-        self.session = session()
-        self.session.keep_alive = True
+        self.session = get_legacy_session()
+        self.session.keep_alive = False
         self.session.headers['User-Agent'] = self.UA
         self.url_login = url_login
         self.url_code = url_code
@@ -225,17 +245,12 @@ class Zlapp(Fudan):
             print("◉正在识别验证码......")
             code = self.validate_code()
             print("◉验证码为:", code)
-            #import pdb; pdb.set_trace()
-            if(city=="上海市"):
-                area = " ".join((city, district))
-            else:
-                area = " ".join((province, city, district))
             self.last_info.update(
                 {
                     "tw": "13",
                     "province": province,
                     "city": city,
-                    "area": area,
+                    "area": " ".join((province, city, district)),
                     #"sfzx": "1",  # 是否在校
                     #"fxyy": "",  # 返校原因
                     "code": code,
