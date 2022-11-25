@@ -8,13 +8,34 @@ from getpass import getpass
 import re
 import base64
 import easyocr
+import random
 import io
 import numpy
 from PIL import Image
 from PIL import ImageEnhance
 
 from requests import session, post, adapters
+import urllib3, ssl
 adapters.DEFAULT_RETRIES = 5
+
+class CustomHttpAdapter (adapters.HTTPAdapter):
+    # "Transport adapter" that allows us to use custom ssl_context.
+
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = urllib3.poolmanager.PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block, ssl_context=self.ssl_context)
+
+def get_legacy_session():
+    ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    ctx.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
+    mySession = session()
+    mySession.mount('https://', CustomHttpAdapter(ctx))
+    return mySession
 
 class Fudan:
     """
@@ -33,8 +54,8 @@ class Fudan:
         :param psw: 密码
         :param url_login: 登录页，默认服务为空
         """
-        self.session = session()
-        self.session.keep_alive = True
+        self.session = get_legacy_session()
+        self.session.keep_alive = False
         self.session.headers['User-Agent'] = self.UA
         self.url_login = url_login
         self.url_code = url_code
@@ -188,6 +209,19 @@ class Zlapp(Fudan):
         img = self.session.get(self.url_code).content
         return self.read_captcha(img)
 
+    def disturb_info(self, meter = 1):
+        geo_api_info = json.loads(self.last_info['geo_api_info'])
+        position = geo_api_info['position']
+        Q, R = float(position["Q"]), float(position["R"])
+        Q += meter * 0.00001 * (2 * random.random() - 1) #【GPS1度约为111km，这里是±meter米扰动】
+        R += meter * 0.00001 * (2 * random.random() - 1)
+        position["Q"] = str(Q)
+        position["R"] = str(R)
+        position["lng"] = str(round(R, 5))
+        position["lat"] = str(round(Q, 5))
+        self.last_info['geo_api_info'] = json.dumps(geo_api_info, ensure_ascii=False)
+        return geo_api_info
+
     def checkin(self):
         """
         提交
@@ -202,7 +236,7 @@ class Zlapp(Fudan):
 
         print("\n\n◉◉提交中")
 
-        geo_api_info = json_loads(self.last_info["geo_api_info"])
+        geo_api_info = self.disturb_info(meter = 1)
         province = self.last_info["province"]
         city = self.last_info["city"]
         district = geo_api_info["addressComponent"].get("district", "")
@@ -211,17 +245,12 @@ class Zlapp(Fudan):
             print("◉正在识别验证码......")
             code = self.validate_code()
             print("◉验证码为:", code)
-            #import pdb; pdb.set_trace()
-            if(city=="上海市"):
-                area = " ".join((city, district))
-            else:
-                area = " ".join((province, city, district))
             self.last_info.update(
                 {
                     "tw": "13",
                     "province": province,
                     "city": city,
-                    "area": area,
+                    "area": " ".join((province, city, district)),
                     #"sfzx": "1",  # 是否在校
                     #"fxyy": "",  # 返校原因
                     "code": code,
