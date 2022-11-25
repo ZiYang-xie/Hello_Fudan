@@ -8,6 +8,7 @@ from getpass import getpass
 import re
 import base64
 import easyocr
+import random
 import io
 import numpy
 from PIL import Image
@@ -188,6 +189,19 @@ class Zlapp(Fudan):
         img = self.session.get(self.url_code).content
         return self.read_captcha(img)
 
+    def disturb_info(self, meter = 1):
+        geo_api_info = json.loads(self.last_info['geo_api_info'])
+        position = geo_api_info['position']
+        Q, R = float(position["Q"]), float(position["R"])
+        Q += meter * 0.00001 * (2 * random.random() - 1) #【GPS1度约为111km，这里是±meter米扰动】
+        R += meter * 0.00001 * (2 * random.random() - 1)
+        position["Q"] = str(Q)
+        position["R"] = str(R)
+        position["lng"] = str(round(R, 5))
+        position["lat"] = str(round(Q, 5))
+        self.last_info['geo_api_info'] = json.dumps(geo_api_info, ensure_ascii=False)
+        return geo_api_info
+
     def checkin(self):
         """
         提交
@@ -202,7 +216,7 @@ class Zlapp(Fudan):
 
         print("\n\n◉◉提交中")
 
-        geo_api_info = json_loads(self.last_info["geo_api_info"])
+        geo_api_info = self.disturb_info(meter = 1)
         province = self.last_info["province"]
         city = self.last_info["city"]
         district = geo_api_info["addressComponent"].get("district", "")
