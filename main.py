@@ -51,7 +51,7 @@ class Fudan:
 
     # 初始化会话
     def __init__(self,
-                 uid, psw, sender, sender_pwd, receiver,
+                 uid, psw,
                  url_login='https://uis.fudan.edu.cn/authserver/login',
                  url_code="https://zlapp.fudan.edu.cn/backend/default/code"):
         """
