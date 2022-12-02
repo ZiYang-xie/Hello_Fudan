@@ -191,7 +191,6 @@ class Zlapp(Fudan):
             self.close()
         if last_info["d"]["info"]["date"] == today:
             print("\n*******今日已提交*******")
-            send_mail("Success")
             self.close()
         else:
             print("\n\n*******未提交*******")
