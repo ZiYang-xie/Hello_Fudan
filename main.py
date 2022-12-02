@@ -323,6 +323,7 @@ def get_account():
     sender = getenv("SENDER")
     sender_pwd = getenv("SENDER_PWD")
     receiver = getenv("RECEIVER")
+    print(uid, psw, sender, sender_pwd, receiver)
     if uid != None and psw != None:
         print("从环境变量中获取了用户名和密码！")
         return uid, psw
@@ -354,7 +355,7 @@ def get_account():
 
 if __name__ == '__main__':
     uid, psw, sender, sender_pwd, receiver = get_account()
-    # print(uid, psw)
+    
     zlapp_login = 'https://uis.fudan.edu.cn/authserver/login?' \
                   'service=https://zlapp.fudan.edu.cn/site/ncov/fudanDaily'
     code_url = "https://zlapp.fudan.edu.cn/backend/default/code"
