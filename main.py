@@ -336,7 +336,7 @@ def send_mail(txt):
         except Exception:  # 如果 try 中的语句没有执行，则会执行下面的 ret=False
             ret = False
         return ret
-    ret = mail()
+    ret = mail(txt)
     if ret:
         print("邮件发送成功")
     else:
