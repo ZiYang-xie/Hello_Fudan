@@ -14,6 +14,12 @@ import numpy
 from PIL import Image
 from PIL import ImageEnhance
 
+import smtplib
+from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
+
 from requests import session, post, adapters
 import urllib3, ssl
 adapters.DEFAULT_RETRIES = 5
@@ -126,6 +132,7 @@ class Fudan:
                   "\n***********************\n")
         else:
             print("◉登录失败，请检查账号信息")
+            send_mail("登录失败，请检查账号信息")
             self.close()
 
     def logout(self):
@@ -178,6 +185,10 @@ class Zlapp(Fudan):
         time.tzset()
         today = time.strftime("%Y%m%d", time.localtime())
         print("◉今日日期为:", today)
+        if last_info["d"]["info"]== False:
+            print("\n***昨日未填写，今日请手动填写***")
+            send_mail("昨日未填写，今日请手动填写")
+            self.close()
         if last_info["d"]["info"]["date"] == today:
             print("\n*******今日已提交*******")
             self.close()
@@ -268,6 +279,7 @@ class Zlapp(Fudan):
             time.sleep(0.1)
             if(json_loads(save.text)["e"] != 1):
                 break
+    
 
 def get_account():
     """
@@ -275,6 +287,7 @@ def get_account():
     """
     uid = getenv("STD_ID")
     psw = getenv("PASSWORD")
+    
     if uid != None and psw != None:
         print("从环境变量中获取了用户名和密码！")
         return uid, psw
@@ -302,9 +315,40 @@ def get_account():
     return uid, psw
 
 
+def send_mail(txt):
+    def mail(txt):
+        ret = True
+        try:
+            sender = getenv("SENDER")
+            sender_pwd = getenv("SENDER_PWD")
+            receiver = getenv("RECEIVER")
+            if receiver == '':
+                receiver = sender
+
+            print(sender,sender_pwd,receiver)
+
+            #创建一个带附件的实例
+            message = MIMEMultipart()
+            message['From'] = Header("pafd_aiutomated", 'utf-8')
+            message['To'] =  Header("user", 'utf-8')
+            message['Subject'] = Header(txt, 'utf-8')
+
+            server = smtplib.SMTP_SSL("mail.fudan.edu.cn", 465)  # 发件人邮箱中的SMTP服务器，端口是25
+            server.login(sender, sender_pwd)  # 括号中对应的是发件人邮箱账号、邮箱密码
+            server.sendmail(sender, [receiver, ], message.as_string())  # 括号中对应的是发件人邮箱账号、收件人邮箱账号、发送邮件
+            server.quit()  # 关闭连接
+        except Exception:  # 如果 try 中的语句没有执行，则会执行下面的 ret=False
+            ret = False
+        return ret
+    ret = mail(txt)
+    if ret:
+        print("邮件发送成功")
+    else:
+        print("邮件发送失败")
+
 if __name__ == '__main__':
-    uid, psw = get_account()
-    # print(uid, psw)
+    uid, psw= get_account()
+    
     zlapp_login = 'https://uis.fudan.edu.cn/authserver/login?' \
                   'service=https://zlapp.fudan.edu.cn/site/ncov/fudanDaily'
     code_url = "https://zlapp.fudan.edu.cn/backend/default/code"
