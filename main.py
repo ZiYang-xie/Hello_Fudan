@@ -289,7 +289,6 @@ def get_account():
     uid = getenv("STD_ID")
     psw = getenv("PASSWORD")
     
-    print(uid, psw, sender, sender_pwd, receiver)
     if uid != None and psw != None:
         print("从环境变量中获取了用户名和密码！")
         return uid, psw
@@ -314,7 +313,7 @@ def get_account():
             new.write(tmp)
         print("账号已保存在目录下account.txt，请注意文件安全，不要放在明显位置\n\n建议拉个快捷方式到桌面")
 
-    return uid, psw, sender, sender_pwd, receiver
+    return uid, psw
 
 
 def send_mail(txt):
