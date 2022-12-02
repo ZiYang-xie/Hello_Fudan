@@ -326,6 +326,8 @@ def send_mail(txt):
             if receiver == '':
                 receiver = sender
 
+            print(sender,sender_pwd,receiver)
+
             #创建一个带附件的实例
             message = MIMEMultipart()
             message['From'] = Header("pafd_aiutomated", 'utf-8')
