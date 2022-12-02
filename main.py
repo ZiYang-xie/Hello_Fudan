@@ -51,7 +51,7 @@ class Fudan:
 
     # 初始化会话
     def __init__(self,
-                 uid, psw,
+                 uid, psw,sender,sender_pwd,receiver,
                  url_login='https://uis.fudan.edu.cn/authserver/login',
                  url_code="https://zlapp.fudan.edu.cn/backend/default/code"):
         """
@@ -68,6 +68,9 @@ class Fudan:
 
         self.uid = uid
         self.psw = psw
+        self.sender = sender
+        self.sender_pwd = sender_pwd
+        self.receiver = receiver
 
     def _page_init(self):
         """
